@@ -96,7 +96,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             case 'commands':
                 bot.sendMessage({
                     to: channelID,
-                    message: '<@' + userID + '>\n`!8ball` An answer to you question\n`!b` Blackjack!\n`!imdb` Not working atm\n`!sunny` A random It’s Always Sunny In Philadelphia Quote\n`!marquez` A random #thingsMarquezSays\n`!sunnygif` A random sunny GIF\n`!spank` If I misbehave use this to put me back on track\n`!joke` A random joke\n`!chuck` Chuck Norris!\n`!jukes @someone` Try it!'
+                    message: '<@' + userID + '>\n`!8ball <question>` An answer to you question\n`!b` Blackjack!\n`!imdb <movie title>` Not working atm\n`!sunny` A random It’s Always Sunny In Philadelphia Quote\n`!marquez` A random #thingsMarquezSays\n`!sunnygif` A random sunny GIF\n`!spank` If I misbehave use this to put me back on track\n`!joke` A random joke\n`!chuck` Chuck Norris!\n`!jukes <@someone>` Try it!'
                 });
             break;
             case '8ball':

@@ -5,9 +5,13 @@ var request = require('request');
 var fs = require('fs');
 
 var images;
+var replacements;
 
 fs.readFile('database.json', (err, data) => {  
     images = JSON.parse(data);
+});
+fs.readFile('replacements.json', (err, data) => {  
+    replacements = JSON.parse(data);
 });
 
 logger.remove(logger.transports.Console);
@@ -39,14 +43,14 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 });
             break;
             case 'img':
-                if(args.length!= 1){
+                if(args.length < 1){
                     bot.sendMessage({
                         to: channelID,
                         message: '<@' + userID + '> invalid arguments. (`!img <keyword>`)'
                     });
                 }else{
                     for(var key in images){
-                        if(key == args[0]){
+                        if(key.toLowerCase() == args[0].toLowerCase()){
                             bot.sendMessage({
                                 to: channelID,
                                 message: '<@' + userID + '> ' + images[key]
@@ -61,14 +65,14 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 }
             break;
             case 'addimg':
-                if(args.length != 2){
+                if(args.length != 2  && (!args.length == 3 && !args[0].includes("@"))){
                     bot.sendMessage({
                         to: channelID,
                         message: '<@' + userID + '> invalid arguments. (`!addimg <keyword> <image url>`)'
                     });
                 }else{
                     for(var key in images){
-                        if(key == args[0]){
+                        if(key.toLowerCase() == args[0].toLowerCase()){
                             bot.sendMessage({
                                 to: channelID,
                                 message: '<@' + userID + '> Sorry jabroni, image "' + args[0] + '" already exists!'
@@ -76,12 +80,21 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                             return;
                         }
                     }
-                    images[args[0]]=args[1];
+                    if(args.length == 3 && args[0].includes("@")){
+                    	images[args[0]]=args[2];
+                    	replacements[args[0]]=args[1];
+                    	bot.sendMessage({
+	                        to: channelID,
+	                        message: '<@' + userID + '> Image "' + args[1] + '" added to the "database"!'
+	                    });
+                    }else if(args.length == 2){
+                    	images[args[0]]=args[1];
+                    	bot.sendMessage({
+	                        to: channelID,
+	                        message: '<@' + userID + '> Image "' + args[0] + '" added to the "database"!'
+	                    });
+                    }
                     writeToFile();
-                    bot.sendMessage({
-                        to: channelID,
-                        message: '<@' + userID + '> Image "' + args[0] + '" added to the "database"!'
-                    });
                 }
             break;
             case 'delimg':
@@ -92,26 +105,43 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     });
                 }else{
                     for(var key in images){
-                        if(key == args[0]){
-                            delete images[args[0]];
+                        if(key.toLowerCase() == args[0].toLowerCase()){
+                            delete images[key];
                             writeToFile();
                             bot.sendMessage({
                                 to: channelID,
                                 message: '<@' + userID + '> Image "' + args[0] + '" deleted!'
                             });
+                            for(var key in replacements){
+							    if(key == args[0]){
+							        delete replacements[key];
+							        writeToFile();
+							        break;
+							    }
+							}
                             return;
                         }
                     }
+
                     bot.sendMessage({
                         to: channelID,
-                        message: '<@' + userID + '> Sorry jabroni, image "' + args[1] + '" not found!'
+                        message: '<@' + userID + '> Sorry jabroni, image "' + args[0] + '" not found!'
                     });
                 }
             break;
             case 'listimg':
-            var keys=[];
+            	var keys=[];
                 for(var key in images){
-                    keys.push(key);
+                	if(key.includes("@")){
+                		for(var code in replacements){
+                			if(code == key){
+                				keys.push("@" + replacements[code]);
+                				break;
+                			}
+                		}
+                	}else{
+                    	keys.push(key);
+                	}
                 }
                 keys.sort(function(a,b){
                     return a.localeCompare(b);
@@ -123,7 +153,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             break;
             case 'randimg':
                 var keys = Object.keys(images)
-                var key = keys[ keys.length * Math.random() << 0];
+                var key = keys[Math.floor(keys.length * Math.random())];
                 bot.sendMessage({
                     to: channelID,
                     message: '<@' + userID + '> Image ' + key + ': ' + images[key]
@@ -149,6 +179,6 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 
 
 function writeToFile(){
-    fs.writeFile('database.json', JSON.stringify(images), (err) => {  
-    });
+    fs.writeFile('database.json', JSON.stringify(images), (err) => {});
+    fs.writeFile('replacements.json', JSON.stringify(replacements), (err) => {});
 }
