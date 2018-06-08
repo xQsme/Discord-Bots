@@ -65,7 +65,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 }
             break;
             case 'addimg':
-                if(args.length != 2  && (!args.length == 3 && !args[0].includes("@"))){
+            	if(valid(args)){
                     bot.sendMessage({
                         to: channelID,
                         message: '<@' + userID + '> invalid arguments. (`!addimg <keyword> <image url>`)'
@@ -87,11 +87,16 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 	                        to: channelID,
 	                        message: '<@' + userID + '> Image "' + args[1] + '" added to the "database"!'
 	                    });
-                    }else if(args.length == 2){
+                    }else if(args.length == 2 && !args[0].includes("@")){
                     	images[args[0]]=args[1];
                     	bot.sendMessage({
 	                        to: channelID,
 	                        message: '<@' + userID + '> Image "' + args[0] + '" added to the "database"!'
+	                    });
+                    }else{
+                    	bot.sendMessage({
+	                        to: channelID,
+	                        message: '<@' + userID + '> invalid arguments. (`!addimg <@keyword> <replacement> <image url>`)'
 	                    });
                     }
                     writeToFile();
@@ -108,21 +113,24 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         if(key.toLowerCase() == args[0].toLowerCase()){
                             delete images[key];
                             writeToFile();
-                            bot.sendMessage({
-                                to: channelID,
-                                message: '<@' + userID + '> Image "' + args[0] + '" deleted!'
-                            });
                             for(var key in replacements){
 							    if(key == args[0]){
+    	                            bot.sendMessage({
+		                                to: channelID,
+		                                message: '<@' + userID + '> Image "' + replacements[key] + '" deleted!'
+		                            });
 							        delete replacements[key];
 							        writeToFile();
-							        break;
+							        return;
 							    }
 							}
+					    	bot.sendMessage({
+                                to: channelID,
+                                message: '<@' + userID + '> Image "' + key + '" deleted!'
+                            });
                             return;
                         }
                     }
-
                     bot.sendMessage({
                         to: channelID,
                         message: '<@' + userID + '> Sorry jabroni, image "' + args[0] + '" not found!'
@@ -181,4 +189,13 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 function writeToFile(){
     fs.writeFile('database.json', JSON.stringify(images), (err) => {});
     fs.writeFile('replacements.json', JSON.stringify(replacements), (err) => {});
+}
+
+function valid(args){
+    if(args.length != 2){
+		if(args.length != 3 || !args[0].includes("@")){
+			return true;
+		}
+	}
+	return false;
 }
