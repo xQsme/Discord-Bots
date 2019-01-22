@@ -6,12 +6,15 @@ var fs = require('fs');
 
 var images;
 var replacements;
+<<<<<<< HEAD
 let currentEmojis = {};
 let savedEmojis = {};
 
 fs.readFile('emojis.json', (err, data) => {  
     savedEmojis = JSON.parse(data);
 });
+=======
+>>>>>>> e83959111eec3ed8419cc5d3efe2bb6943c9f18b
 
 fs.readFile('database.json', (err, data) => {  
     images = JSON.parse(data);
@@ -213,6 +216,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                         if(key.toLowerCase() == args[0].toLowerCase()){
                             delete images[key];
                             writeToFile();
+<<<<<<< HEAD
                             var j = 0;
                             for(var key2 in replacements){
 							    if(key2 == args[0]){
@@ -225,6 +229,18 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 							        return;
 							    }
                                 j++;
+=======
+                            for(var key in replacements){
+							    if(key == args[0]){
+    	                            bot.sendMessage({
+		                                to: channelID,
+		                                message: '<@' + userID + '> Image "' + replacements[key] + '" deleted!'
+		                            });
+							        delete replacements[key];
+							        writeToFile();
+							        return;
+							    }
+>>>>>>> e83959111eec3ed8419cc5d3efe2bb6943c9f18b
 							}
 					    	bot.sendMessage({
                                 to: channelID,
@@ -241,6 +257,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 }
             break;
             case 'listimg':
+<<<<<<< HEAD
             	if(args.length == 0){
 	            	var keys=[];
 	                for(var key in images){
@@ -284,10 +301,33 @@ bot.on('message', function (user, userID, channelID, message, evt) {
 	                    message: '<@' + userID + '> Available images starting with `' + args[0] + '`:\n' + keys.join(" ")
 	                });
 	            }
+=======
+            	var keys=[];
+                for(var key in images){
+                	if(key.includes("@")){
+                		for(var code in replacements){
+                			if(code == key){
+                				keys.push("@" + replacements[code]);
+                				break;
+                			}
+                		}
+                	}else{
+                    	keys.push(key);
+                	}
+                }
+                keys.sort(function(a,b){
+                    return a.localeCompare(b);
+                })
+                bot.sendMessage({
+                    to: channelID,
+                    message: '<@' + userID + '> Available images:\n' + keys.join(" ")
+                });
+>>>>>>> e83959111eec3ed8419cc5d3efe2bb6943c9f18b
             break;
             case 'randimg':
                 var keys = Object.keys(images)
                 var key = keys[Math.floor(keys.length * Math.random())];
+<<<<<<< HEAD
     	        for(var code in replacements){
         			if(code == key){
 		        		bot.sendMessage({
@@ -297,6 +337,8 @@ bot.on('message', function (user, userID, channelID, message, evt) {
         				return;
         			}
         		}
+=======
+>>>>>>> e83959111eec3ed8419cc5d3efe2bb6943c9f18b
                 bot.sendMessage({
                     to: channelID,
                     message: '<@' + userID + '> Image ' + key + ': ' + images[key]
@@ -326,10 +368,13 @@ function writeToFile(){
     fs.writeFile('replacements.json', JSON.stringify(replacements), (err) => {});
 }
 
+<<<<<<< HEAD
 function saveEmojis(){
     fs.writeFile('emojis.json', JSON.stringify(currentEmojis), (err) => {});
 }
 
+=======
+>>>>>>> e83959111eec3ed8419cc5d3efe2bb6943c9f18b
 function valid(args){
     if(args.length != 2){
 		if(args.length != 3 || !args[0].includes("@")){
@@ -337,4 +382,8 @@ function valid(args){
 		}
 	}
 	return false;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> e83959111eec3ed8419cc5d3efe2bb6943c9f18b
