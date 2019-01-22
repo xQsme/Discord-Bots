@@ -2,6 +2,7 @@ var Discord = require('discord.io');
 var logger = require('winston');
 var auth = require('./auth.json');
 var request = require('request');
+var fs = require('fs');
 //Blackjack
 var started=false;
 var joinable=false;
@@ -68,24 +69,11 @@ var quotes = [
 'Oh whoops, I dropped my monster condom that I use for my magnum dong'
 ];
 
-var marquez = [
-'Não gostas de bases de dados porque não sabes a ordem de execução de um select!',
-'O que interessa é o performance',
-'<:dolan:372056334910357510> Bancos ejectaveis ',
-'Funciona ou não funciona?',
-'Faço por exame...',
-'Vou comprar uma cola',
-'O DC ta down...',
-'Para que ter 1 se posso ter 3',
-'O meu é melhor',
-'Abre aí o paint',
-'Toda a gente sabe que o marques é espetacular',
-'Essa cena do marquez tá muito fraquinho',
-'Isso é só burro',
-'Se pagarem bem faço qualquer coisa',
-'<:dolan:372056334910357510> no mundo e perciso arrumadores de papies (edited)',
-'O marques é besta!'
-];
+var marquez = [];
+fs.readFile('database.json', (err, data) => {  
+    marquez = JSON.parse(data);
+});
+
 bot.on('message', function (user, userID, channelID, message, evt) {
     if (message.substring(0, 1) == '!') {
         var args = message.substring(1).split(' ');
@@ -96,7 +84,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             case 'commands':
                 bot.sendMessage({
                     to: channelID,
-                    message: '<@' + userID + '>\n`!8ball` An answer to you question\n`!b` Blackjack!\n`!imdb` Not working atm\n`!sunny` A random It’s Always Sunny In Philadelphia Quote\n`!marquez` A random #thingsMarquezSays\n`!sunnygif` A random sunny GIF\n`!spank` If I misbehave use this to put me back on track\n`!joke` A random joke\n`!chuck` Chuck Norris!\n`!jukes @someone` Try it!'
+                    message: '<@' + userID + '>\n`!8ball <question>` An answer to you question\n`!b` Blackjack!\n`!imdb <movie title>` Not working atm\n`!sunny` A random It’s Always Sunny In Philadelphia Quote\n`!marquez` A random #thingsMarquezSays\n`!addquote <quote>` Add a Marquez Quote\n`!sunnygif` A random sunny GIF\n`!spank` If I misbehave use this to put me back on track\n`!joke` A random joke\n`!chuck` Chuck Norris!\n`!jukes <@someone>` Try it!'
                 });
             break;
             case '8ball':
@@ -160,7 +148,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                 });
             break;
             case 'imdb':
-            var url = "http://theapache64.xyz:8080/movie_db/search?keyword=";
+            var url = "http://www.omdbapi.com/?apikey=17c59968&t=";
             if(args.length >= 1){
                 for(var n = 0; n<args.length; n++){
                     url += args[n];
@@ -211,6 +199,41 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     message: '<@' + userID + '> '+ marquez[Math.round(Math.random() * (marquez.length-1))] + ' :ok_hand:'
                 });
             break;
+            case 'addquote':
+                for(var i = 0; i < marquez.length; i++){
+                    if(marquez[i].toLowerCase() == args.join(" ").toLowerCase()){
+                        bot.sendMessage({
+                            to: channelID,
+                            message: '<@' + userID + '> Quote `' + args.join(" ") + '` already exists'
+                        });
+                        return;
+                    }
+                }
+                marquez.push(args.join(" "));
+                bot.sendMessage({
+                    to: channelID,
+                    message: '<@' + userID + '> Quote `' + args.join(" ") + '` added to the "database" :ok_hand:'
+                });
+                fs.writeFile('database.json', JSON.stringify(marquez), (err) => {});
+            break;
+            case 'delquote':
+                for(var i = 0; i < marquez.length; i++){
+                    if(marquez[i].toLowerCase() == args.join(" ").toLowerCase()){
+                        marquez.splice(i, 1);
+                        fs.writeFile('database.json', JSON.stringify(marquez), (err) => {});
+                        bot.sendMessage({
+                            to: channelID,
+                            message: '<@' + userID + '> Quote `' + args.join(" ") + '` deleted from the "database" :ok_hand:'
+                        });
+                        return;
+                    }
+                }
+                bot.sendMessage({
+                    to: channelID,
+                    message: '<@' + userID + '> Quote `' + args.join(" ") + '` does not exist :ok_hand:'
+                });
+                
+            break;
             case 'spank':
             if(Math.random() > 0.2){
                 bot.sendMessage({
@@ -220,7 +243,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             }else{
                 bot.sendMessage({
                     to: channelID,
-                    message: '<@374966972779200513> slaps <@' + userID + '> in the face, get Shrekt m8!'
+                    message: '<@431547637423013899> slaps <@' + userID + '> in the face, get Shrekt m8!'
                 });
             }
             break;
