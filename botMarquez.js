@@ -10,6 +10,8 @@ var players={};
 var deck=[];
 var current = 1;
 var totalPlayers = 1;
+let currentEmojis = [];
+let savedEmojis = [];
 //Bot
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, {
@@ -25,6 +27,21 @@ bot.on('ready', function (evt) {
     logger.info('Logged in as: ');
     logger.info(bot.username + ' - (' + bot.id + ')');
     bot.setPresence({game:{	name: "Watching IASIP!"}});
+    let server;
+    for(let key in bot.servers){
+        server = bot.servers[key];
+        break;
+    }
+    for(let key in server.emojis)
+    {
+        currentEmojis.push({"id": server.emojis[key].id});
+    }
+    console.log(currentEmojis);
+});
+bot.on('disconnect', function(){
+	setInterval(function(){
+		client.connect();
+	}, 10000)
 });
 var quotes = [ 
 '*You gotta pay the troll toll, if you wanna get into that boy’s hole*',
