@@ -6,9 +6,9 @@
   "author": "xQsme",
   "dependencies": {
     "discord.io": "github:woor/discord.io#gateway_v6",
-    "fs": "0.0.2",
+    "fs": "0.0.1-security",
     "google-search": "0.0.5",
-    "request": "^2.88.0",
-    "winston": "^3.2.1"
+    "request": "^2.83.0",
+    "winston": "^2.4.0"
   }
 }
