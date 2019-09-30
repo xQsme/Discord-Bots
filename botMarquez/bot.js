@@ -10,8 +10,6 @@ var players={};
 var deck=[];
 var current = 1;
 var totalPlayers = 1;
-let currentEmojis = [];
-let savedEmojis = [];
 //Bot
 logger.remove(logger.transports.Console);
 logger.add(logger.transports.Console, {
@@ -27,16 +25,6 @@ bot.on('ready', function (evt) {
     logger.info('Logged in as: ');
     logger.info(bot.username + ' - (' + bot.id + ')');
     bot.setPresence({game:{	name: "Watching IASIP!"}});
-    let server;
-    for(let key in bot.servers){
-        server = bot.servers[key];
-        break;
-    }
-    for(let key in server.emojis)
-    {
-        currentEmojis.push({"id": server.emojis[key].id});
-    }
-    console.log(currentEmojis);
 });
 bot.on('disconnect', function(){
 	setInterval(function(){
@@ -101,7 +89,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             case 'commands':
                 bot.sendMessage({
                     to: channelID,
-                    message: '<@' + userID + '>\n`!8ball <question>` An answer to you question\n`!b` Blackjack!\n`!imdb <movie title>` Not working atm\n`!sunny` A random It’s Always Sunny In Philadelphia Quote\n`!marquez` A random #thingsMarquezSays\n`!addquote <quote>` Add a Marquez Quote\n`!sunnygif` A random sunny GIF\n`!spank` If I misbehave use this to put me back on track\n`!joke` A random joke\n`!chuck` Chuck Norris!\n`!jukes <@someone>` Try it!'
+                    message: '<@' + userID + '>\n`!8ball <question>` An answer to you question\n`!b` Blackjack!\n`!sunny` A random It’s Always Sunny In Philadelphia Quote\n`!marquez` A random #thingsMarquezSays\n`!addquote <quote>` Add a Marquez Quote\n`!sunnygif` A random sunny GIF\n`!spank` If I misbehave use this to put me back on track\n`!chuck` Chuck Norris!'
                 });
             break;
             case '8ball':
@@ -164,52 +152,6 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     message: message
                 });
             break;
-            case 'imdb':
-            var url = "http://www.omdbapi.com/?apikey=17c59968&t=";
-            if(args.length >= 1){
-                for(var n = 0; n<args.length; n++){
-                    url += args[n];
-                    if(n != args.length-1){
-                        url += '+';
-                    }
-                }
-                request({
-                    url: url,
-                    json: true
-                }, function (error, response, body) {
-                    try{
-                        if (!error && response.statusCode === 200) {
-                            if(similarity(body.data.name, message.substring(6)) > 0.35 || body.data.name.substring(0, message.substring(6).length).toLowerCase() == message.substring(6).toLowerCase()){
-                                bot.sendMessage({
-                                    to: channelID,
-                                    message: '<@' + userID + '>\nRating for "' +  body.data.name + '": ' + body.data.rating + "\nDirector: " + body.data.director + "\nGenre: " + body.data.genre
-                                });
-                            }else{
-                                bot.sendMessage({
-                                    to: channelID,
-                                    message: '<@' + userID + '> Sorry Jabroni, ' + message.substring(6) + ' not found!'
-                                });
-                            }
-                        }else{
-                            bot.sendMessage({
-                                to: channelID,
-                                message: '<@' + userID + '> Sorry Jabroni, ' + message.substring(6) + ' not found!'
-                            });
-                        }
-                    }catch(err){
-                        bot.sendMessage({
-                            to: channelID,
-                            message: '<@' + userID + '> Sorry Jabroni, ' + message.substring(6) + ' not found!'
-                        });
-                    }
-                })
-            }else{
-                bot.sendMessage({
-                    to: channelID,
-                    message: 'Sorry Jabroni, please ask something worth my time'
-                });
-            }
-            break;
             case 'marquez':
                 bot.sendMessage({
                     to: channelID,
@@ -267,12 +209,11 @@ bot.on('message', function (user, userID, channelID, message, evt) {
             case 'blackjack':
             case 'black':
             case 'b':
-                if(message == '.b' || message == '.black' || message == '.blackjack'){
+                if(message == '!b' || message == '!black' || message == '!blackjack'){
                     bot.sendMessage({
                         to: channelID,
-                        message: '<@' + userID + '>\n`.b balance` Check your current balance\n`.b new` Create a new game\n`.b join` Join the current game\n`.b start` Start the current game\n`.b end` End the current game\n`.b refill` Refill your balance'
+                        message: '<@' + userID + '>\n`!b balance` Check your current balance\n`!b new` Create a new game\n`!b join` Join the current game\n`!b start` Start the current game\n`!b end` End the current game\n`!b refill` Refill your balance'
                     });
-                    
                 }
                 switch(args[0]){
                 	case 'quit':
@@ -303,7 +244,7 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                             newGame();
                             bot.sendMessage({
                                 to: channelID,
-                                message: 'New game of blackjack\n`.b join` to join'
+                                message: 'New game of blackjack\n`!b join` to join'
                             });
                         }
                     break;
@@ -426,29 +367,6 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                     break;
                 }
             break;
-            case 'jukes':
-            	if(typeof args[0] !== 'undefined' && message.indexOf("@") != -1){
-		            var url = "http://api.yomomma.info";
-		            var index=message.indexOf("@")-1;
-                    var person=message.substring(index).split(' ')[0];
-		            url=request({
-	                    url: url,
-	                    json: true
-		                }, function (error, response, body) {
-	                        if (!error && response.statusCode === 200) {
-	                            bot.sendMessage({
-                                    to: channelID,
-                                    message: person + ' ' +  body.joke
-                                });
-	                        }
-		            })
-		        }else{
-    		        bot.sendMessage({
-                        to: channelID,
-                        message: '<@' + userID + '> Use format `.jukes @someone`'
-                    });
-		        }
-	        break;
 	        case 'sunnygif':
 	            var url = "https://api.giphy.com/v1/gifs/random?api_key=QzNNKTk1h941IKY7dWB9GuK5tQYc3OQw&tag=it's always sunny&rating=G";
 	            url=request({
@@ -473,20 +391,6 @@ bot.on('message', function (user, userID, channelID, message, evt) {
                             bot.sendMessage({
                                 to: channelID,
                                 message: '<@' + userID + '> ' +   body.value.joke
-                            });
-                        }
-	            })
-	        break;
-	        case 'joke':
-	            var url = "https://08ad1pao69.execute-api.us-east-1.amazonaws.com/dev/random_joke";
-	            url=request({
-                    url: url,
-                    json: true
-	                }, function (error, response, body) {
-                        if (!error && response.statusCode === 200) {
-                            bot.sendMessage({
-                                to: channelID,
-                                message: '<@' + userID + '>\n' +   body.setup + '\n' + body.punchline
                             });
                         }
 	            })
@@ -602,7 +506,7 @@ function missingBets(){
             message += '<@' + players[key].id + '>\n';
         }
     }
-    message += '`.b bet XXX` to bet';
+    message += '`!b bet XXX` to bet';
     return message;
 }
 
@@ -623,7 +527,7 @@ function askChoice(){
     for(var key in players){
         if(curr == current){
             players[key].turn = true;
-            return '<@' + players[key].id + '> `.b hitme` for another card or `.b hold`';
+            return '<@' + players[key].id + '> `!b hitme` for another card or `!b hold`';
         }
         curr++;
     }
@@ -640,7 +544,7 @@ function nextBet(){
 function endHand(channelID){
     current = 1;
     decideMoreCards();
-    var message = 'Hand results\n<@374966972779200513> Cards: ' +  players['sunnyBot'].cards + ' Total: ' + total(players['sunnyBot'].cards) + '\n';
+    var message = 'Hand results\n<@431547637423013899> Cards: ' +  players['sunnyBot'].cards + ' Total: ' + total(players['sunnyBot'].cards) + '\n';
     for(var key in players){
         if(key != 'sunnyBot'){
             if(total(players[key].cards) < 22){
@@ -713,7 +617,7 @@ function gameState(){
     var message = "Current Hand\n";
     for(var key in players){
         if(key == 'sunnyBot')
-            message += '<@374966972779200513> Cards: ?,' +  players[key].cards.slice(1) + ' Total: ' + total(players[key].cards.slice(1)) + '\n';
+            message += '<@431547637423013899> Cards: ?,' +  players[key].cards.slice(1) + ' Total: ' + total(players[key].cards.slice(1)) + '\n';
         else
             if(total(players[key].cards) > 21)
                 message += '<@' + players[key].id + '> Cards: ' +  players[key].cards + ' BUST!\n';
